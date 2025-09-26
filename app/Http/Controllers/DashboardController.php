@@ -3,88 +3,215 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Feedback;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function grafik()
+    public function grafik(Request $request)
     {
-        // 🔹 Statistik Jenis Kelamin
-        $genderStats = Feedback::selectRaw('jenis_kelamin, COUNT(*) as total')
-                        ->groupBy('jenis_kelamin')
-                        ->pluck('total', 'jenis_kelamin');
+        // default tahun = sekarang
+        $tahun     = $request->get('tahun', date('Y'));
+        $bulan     = $request->get('bulan', null);
+        $triwulan  = $request->get('triwulan', null);
+        $semester  = $request->get('semester', null);
 
-        // 🔹 Statistik Layanan
-        $layananStats = Feedback::selectRaw('layanan, COUNT(*) as total')
-                        ->groupBy('layanan')
-                        ->pluck('total', 'layanan');
+        // helper closure untuk filter tahun & periode
+        $applyFilters = function ($query) use ($tahun, $bulan, $triwulan, $semester) {
+            $query->where('keperluan', 'pst')
+                  ->whereYear('tanggal_kunjungan', $tahun);
 
-        // 🔹 Statistik Instansi
-        $instansiStats = Feedback::selectRaw('instansi, COUNT(*) as total')
-                        ->groupBy('instansi')
-                        ->pluck('total', 'instansi');
+            // 🔹 Prioritas: bulan > triwulan > semester
+            if (!empty($bulan)) {
+                $query->whereMonth('tanggal_kunjungan', $bulan);
+            } elseif (!empty($triwulan)) {
+                $bulanRange = match ($triwulan) {
+                    1 => [1, 3],   // Jan–Mar
+                    2 => [4, 6],   // Apr–Jun
+                    3 => [7, 9],   // Jul–Sep
+                    4 => [10, 12], // Okt–Des
+                };
+                $query->whereBetween(DB::raw('MONTH(tanggal_kunjungan)'), $bulanRange);
+            } elseif (!empty($semester)) {
+                $bulanRange = $semester == 1 ? [1, 6] : [7, 12];
+                $query->whereBetween(DB::raw('MONTH(tanggal_kunjungan)'), $bulanRange);
+            }
 
-        // 🔹 Statistik Pekerjaan
-        $pekerjaanStats = Feedback::selectRaw('pekerjaan, COUNT(*) as total')
-                        ->groupBy('pekerjaan')
-                        ->pluck('total', 'pekerjaan');
+            return $query;
+        };
 
-        // 🔹 Statistik Usia (kelompok umur)
-        $usiaStats = Feedback::selectRaw("
-            CASE
-                WHEN usia < 20 THEN '<20'
-                WHEN usia BETWEEN 20 AND 29 THEN '20-29'
-                WHEN usia BETWEEN 30 AND 39 THEN '30-39'
-                WHEN usia BETWEEN 40 AND 49 THEN '40-49'
-                ELSE '50+'
-            END as kelompok_usia, COUNT(*) as total
-        ")->groupBy('kelompok_usia')
-          ->pluck('total','kelompok_usia');
+        // === Data utama untuk ringkasan ===
+        $feedbacks = $applyFilters(DB::table('feedback'))->get();
 
-        // 🔹 Statistik Kepuasan Survei (1-5 bintang)
-        $surveiStats = Feedback::select('survei', DB::raw('COUNT(*) as total'))
-                        ->groupBy('survei')
-                        ->orderBy('survei', 'asc')
-                        ->pluck('total', 'survei')
-                        ->mapWithKeys(function($value, $key){
-                            return [$key . ' Bintang' => $value];
-                        });
+        $totalKunjungan = $feedbacks->count();
+        $totalLaki      = $feedbacks->where('jenis_kelamin', 'Laki-laki')->count();
+        $totalPerempuan = $feedbacks->where('jenis_kelamin', 'Perempuan')->count();
 
-        // 🔹 Tren Harian (YYYY-MM-DD)
-        $dailyTrend = Feedback::selectRaw("DATE(tanggal_kunjungan) as tanggal, COUNT(*) as total")
-                        ->groupBy('tanggal')
-                        ->orderBy('tanggal', 'asc')
-                        ->pluck('total', 'tanggal');
+        // === Instansi ===
+        $instansiByYear = $applyFilters(DB::table('feedback'))
+            ->selectRaw("
+                CASE 
+                    WHEN LOWER(TRIM(instansi)) IN (
+                        'lembaga negara',
+                        'kementrian/lembaga pemerintah',
+                        'tni/polri/bin/kejaksaan',
+                        'pemerintah daerah',
+                        'lembaga internasional',
+                        'lembaga penelitian/pendidikan',
+                        'bumn/d',
+                        'swasta'
+                    )
+                        THEN LOWER(TRIM(instansi))
+                    ELSE 'lainnya'
+                END as instansi_group, COUNT(*) as total
+            ")
+            ->groupBy('instansi_group')
+            ->get();
 
-        // 🔹 Tren Bulanan (YYYY-MM)
-        $monthlyTrend = Feedback::selectRaw("DATE_FORMAT(tanggal_kunjungan, '%Y-%m') as bulan, COUNT(*) as total")
-                        ->groupBy('bulan')
-                        ->orderBy('bulan', 'asc')
-                        ->pluck('total', 'bulan');
+        $instansiByYear = $instansiByYear->map(function ($item) {
+            $item->instansi_group = $item->instansi_group === 'lainnya'
+                ? 'Lainnya'
+                : ucfirst($item->instansi_group);
+            return $item;
+        });
 
-        // 🔹 Tren Mingguan (YYYY-WW)
-        $weeklyTrend = Feedback::selectRaw("YEARWEEK(tanggal_kunjungan, 1) as minggu, COUNT(*) as total")
-                        ->groupBy('minggu')
-                        ->orderBy('minggu', 'asc')
-                        ->pluck('total', 'minggu')
-                        ->mapWithKeys(function ($value, $key) {
-                            $year  = substr($key, 0, 4);
-                            $week  = substr($key, 4);
-                            return [$year . '-W' . $week => $value];
-                        });
+        // === Kunjungan ===
+        $kunjunganByYear = $applyFilters(DB::table('feedback'))
+            ->selectRaw("
+                CASE 
+                    WHEN LOWER(TRIM(kunjungan)) IN (
+                        'tugas sekolah/kuliah',
+                        'pemerintahan',
+                        'komersial',
+                        'penelitian'
+                    )
+                        THEN LOWER(TRIM(kunjungan))
+                    ELSE 'lainnya'
+                END as kunjungan_group, COUNT(*) as total
+            ")
+            ->groupBy('kunjungan_group')
+            ->get();
 
-        // 🔹 Kirim semua data ke view
+        // === Layanan ===
+        $layananByYear = $applyFilters(DB::table('feedback'))
+            ->selectRaw("
+                CASE 
+                    WHEN LOWER(TRIM(layanan)) IN (
+                        'perpustakaan',
+                        'pembelian publikasi bps',
+                        'pembelian data mikro/peta wilkerstat',
+                        'akses produk statistik pada website',
+                        'konsultasi statistik',
+                        'rekomendasi kegiatan statistik'
+                    )
+                        THEN LOWER(TRIM(layanan))
+                    ELSE 'lainnya'
+                END as layanan_group, COUNT(*) as total
+            ")
+            ->groupBy('layanan_group')
+            ->get();
+
+        // === Pekerjaan ===
+        $pekerjaanByYear = $applyFilters(DB::table('feedback'))
+            ->selectRaw("
+                CASE 
+                    WHEN LOWER(TRIM(pekerjaan)) IN (
+                        'pelajar/mahasiswa',
+                        'peneliti/dosen',
+                        'asn/tni/polri',
+                        'pegawai bumn/d',
+                        'pegawai swasta',
+                        'wiraswasta'
+                    )
+                        THEN LOWER(TRIM(pekerjaan))
+                    ELSE 'lainnya'
+                END as pekerjaan_group, COUNT(*) as total
+            ")
+            ->groupBy('pekerjaan_group')
+            ->get();
+
+        // === Usia ===
+        $usiaByYear = $applyFilters(DB::table('feedback'))
+            ->selectRaw("
+                CASE
+                    WHEN usia < 20 THEN '<20'
+                    WHEN usia BETWEEN 20 AND 29 THEN '20-29'
+                    WHEN usia BETWEEN 30 AND 39 THEN '30-39'
+                    WHEN usia BETWEEN 40 AND 49 THEN '40-49'
+                    ELSE '50+'
+                END as kelompok_usia, COUNT(*) as total
+            ")
+            ->groupBy('kelompok_usia')
+            ->get();
+
+        // === Data per bulan (1-12) ===
+        $instansiByMonth = $this->fillMonths(
+            $applyFilters(DB::table('feedback'))
+                ->selectRaw('MONTH(tanggal_kunjungan) as bulan, COUNT(*) as total')
+                ->groupBy('bulan')
+                ->pluck('total', 'bulan')
+                ->toArray()
+        );
+
+        $layananByMonth = $this->fillMonths(
+            $applyFilters(DB::table('feedback'))
+                ->selectRaw('MONTH(tanggal_kunjungan) as bulan, COUNT(*) as total')
+                ->groupBy('bulan')
+                ->pluck('total', 'bulan')
+                ->toArray()
+        );
+
+        $pekerjaanByMonth = $this->fillMonths(
+            $applyFilters(DB::table('feedback'))
+                ->selectRaw('MONTH(tanggal_kunjungan) as bulan, COUNT(*) as total')
+                ->groupBy('bulan')
+                ->pluck('total', 'bulan')
+                ->toArray()
+        );
+
+        $usiaByMonth = $this->fillMonths(
+            $applyFilters(DB::table('feedback'))
+                ->selectRaw('MONTH(tanggal_kunjungan) as bulan, COUNT(*) as total')
+                ->groupBy('bulan')
+                ->pluck('total', 'bulan')
+                ->toArray()
+        );
+
+        // === Daftar Tahun ===
+        $tahunList = DB::table('feedback')
+            ->selectRaw('DISTINCT YEAR(tanggal_kunjungan) as tahun')
+            ->orderBy('tahun', 'asc')
+            ->pluck('tahun');
+
         return view('grafik.index', compact(
-            'genderStats',
-            'layananStats',
-            'instansiStats',
-            'pekerjaanStats',
-            'usiaStats',
-            'surveiStats',
-            'dailyTrend',
-            'monthlyTrend',
-            'weeklyTrend'
+            'instansiByYear',
+            'kunjunganByYear',
+            'layananByYear',
+            'pekerjaanByYear',
+            'usiaByYear',
+            'instansiByMonth',
+            'layananByMonth',
+            'pekerjaanByMonth',
+            'usiaByMonth',
+            'tahunList',
+            'tahun',
+            'bulan',
+            'triwulan',
+            'semester',
+            'totalKunjungan',
+            'totalLaki',
+            'totalPerempuan'
         ));
+    }
+
+    /**
+     * Helper untuk isi data bulan 1-12 (isi 0 jika kosong)
+     */
+    private function fillMonths($data)
+    {
+        $result = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $result[] = $data[$i] ?? 0;
+        }
+        return $result;
     }
 }

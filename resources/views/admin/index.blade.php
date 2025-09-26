@@ -2,10 +2,14 @@
 
 @section('content')
 <div class="container">
-    <!-- Judul -->
-    <h3 class="fw-bold mb-4 text-primary">
-        👨‍💻 Daftar Admin
-    </h3>
+    {{-- 🔹 Header Utama --}}
+    <div class="p-4 mb-4 rounded-3 shadow-sm text-white" 
+         style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
+        <h3 class="fw-bold mb-1">
+            <i class="bi bi-person-badge-fill me-2 text-warning"></i> Daftar Admin
+        </h3>
+        <p class="mb-0">Berikut adalah daftar admin yang terdaftar dalam sistem.</p>
+    </div>
 
     <!-- Card -->
     <div class="card shadow-lg border-0 rounded-4">
@@ -17,6 +21,7 @@
                             <th>No</th>
                             <th>Nama</th>
                             <th>Email</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,6 +30,16 @@
                             <td class="fw-semibold text-center">{{ $loop->iteration }}</td>
                             <td>{{ $admin->name }}</td>
                             <td>{{ $admin->email }}</td>
+                            <td class="text-center">
+                                <!-- Tombol hapus (buka modal) -->
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#confirmDeleteModal" 
+                                        data-admin-id="{{ $admin->id }}">
+                                    🗑️ Hapus
+                                </button>
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -33,6 +48,87 @@
         </div>
     </div>
 </div>
+
+<!-- 🔹 Modal Konfirmasi -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="confirmDeleteLabel">Konfirmasi Hapus</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="fs-5 fw-semibold">Yakin ingin menghapus admin ini?</p>
+        <small class="text-muted">Tindakan ini tidak bisa dibatalkan.</small>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary rounded-3 px-4" data-bs-dismiss="modal">Batal</button>
+        <!-- Form hapus diisi dinamis -->
+        <form id="deleteForm" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger rounded-3 px-4">Ya, Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔹 Modal Notifikasi Sukses -->
+@if(session('success'))
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg">
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="successLabel">Berhasil!</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="fs-5 fw-semibold">{{ session('success') }}</p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-success rounded-3 px-4" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const confirmModal = document.getElementById('confirmDeleteModal');
+    const deleteForm = document.getElementById('deleteForm');
+
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; 
+        const adminId = button.getAttribute('data-admin-id'); 
+
+        // update action form sesuai ID admin
+        deleteForm.action = "/admin/" + adminId;
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // kalau ada session success, tampilkan modal sukses
+    const successModal = document.getElementById('successModal');
+    if (successModal) {
+        const modal = new bootstrap.Modal(successModal);
+        modal.show();
+
+        // optional: otomatis nutup setelah 3 detik
+        setTimeout(() => {
+            modal.hide();
+        }, 3000);
+    }
+});
+</script>
+
 
 <!-- jQuery & DataTables -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -69,8 +165,9 @@ $(document).ready(function() {
 <!-- 🔹 Styling konsisten -->
 <style>
 /* 🔹 Header tabel dengan gradasi */
+/* 🔹 Header tabel konsisten dengan header utama */
 #adminTable thead th {
-    background: linear-gradient(135deg, #0077b6, #00b4d8) !important;
+    background: linear-gradient(135deg, #6a11cb, #2575fc) !important;
     color: #fff !important;
     text-transform: uppercase;
     text-align: center !important;
@@ -81,6 +178,7 @@ $(document).ready(function() {
     border: 1px solid #dee2e6 !important;
     position: relative; /* supaya panah sorting bisa muncul */
 }
+
 
 /* 🔹 Zebra strip (selang-seling warna) */
 #adminTable tbody tr:nth-child(odd) {

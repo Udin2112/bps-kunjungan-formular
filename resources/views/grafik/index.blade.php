@@ -1,423 +1,422 @@
-@extends('layouts.app')
+=@extends('layouts.app')
 
 @section('content')
 <div class="container">
-    <!-- Heading Cantik -->
-    <h4 class="fw-bold mb-4 heading-custom">
-        📊 Grafik Kunjungan Tamu
-    </h4>
-
-    <div class="row">
-        <!-- Grafik Jenis Kelamin -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-white d-flex justify-content-between align-items-center"
-                     style="background-color: #003366;">
-                    Distribusi Berdasarkan Jenis Kelamin
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('genderChart')">⬇️</button>
-                </div>
-                <div class="card-body d-flex justify-content-center">
-                    <div style="width:280px;height:280px;">
-                        <canvas id="genderChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 🔄 Grafik Instansi (tukar ke atas) -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background:#ff9800;">
-                    Distribusi Berdasarkan Instansi
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('instansiChart')">⬇️</button>
-                </div>
-                <div class="card-body d-flex justify-content-center">
-                    <div style="width:280px;height:280px;">
-                        <canvas id="instansiChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- 🔄 Grafik Layanan (pindah ke bawah) -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-dark d-flex justify-content-between align-items-center" style="background:#fbc02d;">
-                    Distribusi Berdasarkan Layanan
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('layananChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="layananChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Grafik Pekerjaan -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-white d-flex justify-content-between align-items-center"
-                     style="background-color:#42a5f5;">
-                    Distribusi Berdasarkan Pekerjaan
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('pekerjaanChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="pekerjaanChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sisanya tetap sama -->
-     <!-- ✅ Survei & Usia sekarang ada tombol download -->
-    <div class="row">
-        <!-- Survei -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header text-white fw-bold d-flex justify-content-between align-items-center" style="background:#e53935;">
-                    Distribusi Kepuasan Survei
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('surveiChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="surveiChart" height="220"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Usia -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header text-white fw-bold d-flex justify-content-between align-items-center" style="background:#6c5ce7;">
-                    Distribusi Berdasarkan Usia
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('usiaChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="usiaChart" height="220"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="row">
-        <!-- Tren Bulanan -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-white d-flex justify-content-between align-items-center"
-                     style="background-color: #ff9800;">
-                    Tren Kunjungan per Bulan
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('monthlyChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tren Mingguan -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header text-white d-flex justify-content-between align-items-center"
-                     style="background-color: #2e7d32;">
-                    Tren Kunjungan per Minggu
-                    <button class="btn btn-light btn-sm" onclick="downloadChart('weeklyChart')">⬇️</button>
-                </div>
-                <div class="card-body">
-                    <canvas id="weeklyChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    {{-- 🔹 Header Utama --}}
+    <div class="p-4 mb-4 rounded-3 shadow-sm text-white" 
+     style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
+    <h3 class="fw-bold mb-1">
+        <i class="bi bi-database-fill-check me-2 text-warning"></i> Database Kunjungan
+    </h3>
+    <p class="mb-0">Berikut adalah data kunjungan Tamu PST yang telah masuk.</p>
 </div>
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Data & Script Chart -->
-<script>
-   const genderData    = @json($genderStats);
-   
-const layananData   = @json($layananStats);
-const instansiData  = @json($instansiStats);
-const pekerjaanData = @json($pekerjaanStats);
-const monthlyTrend  = @json($monthlyTrend);
-const weeklyTrend   = @json($weeklyTrend);
-const usiaData      = @json($usiaStats);   // ✅ Tambah ini
-const surveiData    = @json($surveiStats); // ✅ Tambah ini
-
-
-    // Function download chart
-    function downloadChart(canvasId, format = "png") {
-        const canvas = document.getElementById(canvasId);
-        const link = document.createElement('a');
-        link.download = canvasId + '.' + format;
-        link.href = canvas.toDataURL("image/" + format, 1.0);
-        link.click();
-    }
-
-    const genderColors = {
-    "Laki-laki": "#42a5f5", // biru
-    "Perempuan": "#f48fb1"  // pink
-};
-
-new Chart(document.getElementById('genderChart'), {
-    type: 'pie',
-    data: {
-        labels: Object.keys(genderData),
-        datasets: [{
-            data: Object.values(genderData),
-            backgroundColor: Object.keys(genderData).map(label => genderColors[label] || '#ccc'),
-            borderColor: "#fff",
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    font: { size: 13, weight: 'bold' },
-                    usePointStyle: true,
-                    pointStyle: 'circle'
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.label + ": " + context.raw + " orang";
-                    }
-                }
-            }
-        }
-    }
-});
+    {{-- 🔹 Filter Tahun & Bulan --}}
+    {{-- 🔹 Filter Tahun & Bulan --}}
+{{-- 🔹 Filter Tahun & Bulan --}}
+{{-- 🔹 Filter + Card Statistik Ringkas --}}
+<div class="row mb-4 align-items-stretch">
+   <!-- Filter Tahun & Bulan -->
+<div class="col-lg-4 mb-3">
+   <form action="{{ route('grafik.index') }}" method="GET" id="filterForm"
+      class="d-flex flex-column justify-content-center align-items-center gap-3 p-3 rounded-3 shadow-sm text-dark text-center h-100"
+      style="background: linear-gradient(135deg, #f7971e, #ffd200);"> <!-- Orange modern -->
 
 
 
+            {{-- Tahun --}}
+            <div class="w-100">
+                <label for="tahun" class="fw-bold mb-2 fs-6 text-white">
+    <i class="bi bi-calendar-event me-1 text-white"></i> Tahun
+</label>
+                <select name="tahun" id="tahun"
+                        class="form-select shadow-sm border-0 rounded-2 px-3 py-2 fs-6 fw-semibold text-center bg-light"
+                        onchange="document.getElementById('filterForm').submit()">
+                    @foreach($tahunList as $t)
+                        <option value="{{ $t }}" {{ $t == $tahun ? 'selected' : '' }}>
+                            {{ $t }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-   new Chart(document.getElementById('layananChart'), {
-    type: 'bar',
-    data: {
-        labels: Object.keys(layananData),
-        datasets: [{
-            label: 'Jumlah Kunjungan',
-            data: Object.values(layananData),
-            backgroundColor: '#fbc02d' // 🔹 kuning modern
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
+            {{-- Bulan --}}
+            <div class="w-100">
+                <label for="bulan" class="fw-bold mb-2 fs-6 text-white">
+    <i class="bi bi-calendar-month me-1 text-white"></i> Bulan
+</label>
+                <select name="bulan" id="bulan"
+                        class="form-select shadow-sm border-0 rounded-2 px-3 py-2 fs-6 fw-semibold text-center bg-light"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Semua Bulan</option>
+                    @foreach([
+                        '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
+                        '04' => 'April',   '05' => 'Mei',      '06' => 'Juni',
+                        '07' => 'Juli',    '08' => 'Agustus',  '09' => 'September',
+                        '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                    ] as $num => $nama)
+                        <option value="{{ $num }}" {{ $num == $bulan ? 'selected' : '' }}>
+                            {{ $nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
+    </div>
 
-   // 🔹 Warna unik untuk instansi (9 instansi → 9 warna berbeda)
-const instansiColors = [
-    "#1abc9c", "#3498db", "#9b59b6", "#f39c12", "#e74c3c",
-    "#2ecc71", "#e67e22", "#34495e", "#ff6f61"
+    <!-- 🔹 Card Statistik -->
+<div class="col-lg-8 col-12">
+  <div class="row">
+    
+    <!-- Card Total Kunjungan -->
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+      <div class="stat-card shadow-lg rounded-3xl overflow-hidden">
+        <div class="stat-header d-flex align-items-center justify-content-center py-3"
+             style="background: linear-gradient(135deg, #36d1dc, #5b86e5);">
+          <i class="bi bi-people-fill fs-2 text-white"></i>
+        </div>
+        <div class="stat-body text-center p-3 bg-white">
+          <h4 class="fw-bold mb-1 text-gray-800">{{ $totalKunjungan }}</h4>
+          <small class="text-muted">Total Kunjungan</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Total Laki-laki -->
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+      <div class="stat-card shadow-lg rounded-3xl overflow-hidden">
+        <div class="stat-header d-flex align-items-center justify-content-center py-3"
+             style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+          <i class="bi bi-person-badge fs-2 text-white"></i>
+        </div>
+        <div class="stat-body text-center p-3 bg-white">
+          <h4 class="fw-bold mb-1 text-gray-800">{{ $totalLaki }}</h4>
+          <small class="text-muted">Total Laki-laki</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Total Perempuan -->
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+      <div class="stat-card shadow-lg rounded-3xl overflow-hidden">
+        <div class="stat-header d-flex align-items-center justify-content-center py-3"
+             style="background: linear-gradient(135deg, #ff758c, #ff7eb3);">
+          <i class="bi bi-person-hearts fs-2 text-white"></i>
+        </div>
+        <div class="stat-body text-center p-3 bg-white">
+          <h4 class="fw-bold mb-1 text-gray-800">{{ $totalPerempuan }}</h4>
+          <small class="text-muted">Total Perempuan</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+
+
+
+
+    {{-- 🔹 Chart Section --}}
+    <div class="row">
+        @php
+   $charts = [
+    'kunjunganChart' => ['title' => 'Grafik Pemanfaatan Kunjungan', 'gradient' => 'linear-gradient(135deg,#ff416c,#ff4b2b)'],
+    'genderChart'    => ['title' => 'Distribusi Berdasarkan Jenis Kelamin', 'gradient' => 'linear-gradient(135deg,#6a11cb,#2575fc)'],
+    'pekerjaanChart' => ['title' => 'Distribusi Berdasarkan Pekerjaan', 'gradient' => 'linear-gradient(135deg,#f7971e,#ffd200)'],
+    'usiaChart'      => ['title' => 'Distribusi Berdasarkan Usia', 'gradient' => 'linear-gradient(135deg,#cb2d3e,#ef473a)'],
+    'instansiChart'  => ['title' => 'Distribusi Berdasarkan Instansi', 'gradient' => 'linear-gradient(135deg,#1e3c72,#2a5298)'],
+    'layananChart'   => ['title' => 'Distribusi Berdasarkan Layanan', 'gradient' => 'linear-gradient(135deg,#11998e,#38ef7d)'],
 ];
 
-// 🔹 Grafik Instansi
-new Chart(document.getElementById('instansiChart'), {
-    type: 'pie',
-    data: {
-        labels: Object.keys(instansiData),
-        datasets: [{
-            data: Object.values(instansiData),
-            backgroundColor: Object.keys(instansiData).map((_, i) => instansiColors[i % instansiColors.length]),
-            borderWidth: 2,
-            borderColor: "#fff"
-        }]
+@endphp
+
+@foreach($charts as $id => $chart)
+<div class="col-md-6 mb-4">
+    <div class="chart-card rounded-2xl shadow-lg overflow-hidden">
+        <div class="chart-header px-4 py-2 fw-semibold text-white" style="background: {{ $chart['gradient'] }}">
+            {{ $chart['title'] }}
+        </div>
+        <div class="chart-body p-4">
+            <canvas id="{{ $id }}"></canvas>
+        </div>
+    </div>
+</div>
+@endforeach
+
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const shadowPlugin = {
+    id: "shadow",
+    beforeDraw: (chart) => {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
     },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    font: { size: 12, weight: 'bold' },
-                    usePointStyle: true,
-                    pointStyle: 'circle'
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.label + ": " + context.raw + " tamu";
-                    }
-                }
-            }
-        }
+    afterDraw: (chart) => {
+        chart.ctx.restore();
     }
-});
+};
+
+// Default font global
+Chart.defaults.font.family = "'Poppins','Segoe UI', sans-serif";
+Chart.defaults.font.size = 13;
+
+const chartData = {
+    instansiChart: @json($instansiByYear),
+    kunjunganChart: @json($kunjunganByYear),
+    layananChart: @json($layananByYear),
+    pekerjaanChart: @json($pekerjaanByYear),
+    usiaChart: @json($usiaByYear),
+    genderChart: [
+        { label: "Laki-laki", total: {{ $totalLaki }} },
+        { label: "Perempuan", total: {{ $totalPerempuan }} }
+    ]
+};
 
 
-   new Chart(document.getElementById('pekerjaanChart'), {
-    type: 'bar',
-    data: {
-        labels: Object.keys(pekerjaanData),
-        datasets: [{
-            label: 'Jumlah Tamu',
-            data: Object.values(pekerjaanData),
-            backgroundColor: '#42a5f5' // biru cerah modern
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true } }
-    }
-});
+// Palet warna
+const palette = {
+    instansi: "#4e79a7",
+    layanan: "#59a14f",
+    pekerjaan: "#f28e2b",
+    usia: "#e15759",
+    kunjungan: ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7"],
+    gender: ["#36a2eb", "#ff6384"] // biru utk laki-laki, pink utk perempuan
+};
 
 
-    new Chart(document.getElementById('monthlyChart'), {
-        type: 'line',
+Object.keys(chartData).forEach(id => {
+    const ctx = document.getElementById(id);
+    const labels = chartData[id].map(item => Object.values(item)[0]);
+    const values = chartData[id].map(item => Number(item.total));
+
+    // Gradient warna default
+    const ctx2d = ctx.getContext("2d");
+    const gradient = ctx2d.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, "rgba(91, 134, 229, 0.9)");
+    gradient.addColorStop(1, "rgba(54, 209, 220, 0.2)");
+
+    let type = 'bar';
+    let extraOptions = {};
+    let datasetOptions = {
+        label: 'Jumlah',
+        data: values,
+        backgroundColor: gradient,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: "rgba(255,255,255,0.8)",
+        barThickness: 35
+    };
+
+    // Aturan khusus per chart
+if (id === 'instansiChart') {
+    type = 'bar';
+    extraOptions = { indexAxis: 'y' };
+    datasetOptions.backgroundColor = palette.instansi;
+} else if (id === 'layananChart') {
+    type = 'bar';
+    extraOptions = { indexAxis: 'y' };
+    datasetOptions.backgroundColor = palette.layanan;
+} else if (id === 'pekerjaanChart') {
+    type = 'bar';
+    datasetOptions.backgroundColor = palette.pekerjaan;
+} else if (id === 'kunjunganChart') {
+    type = 'pie';
+    datasetOptions.backgroundColor = palette.kunjungan;
+} else if (id === 'usiaChart') {
+    type = 'bar';
+    datasetOptions.backgroundColor = palette.usia;
+} else if (id === 'genderChart') {
+    type = 'pie';
+    datasetOptions.backgroundColor = palette.gender;
+}
+
+
+
+    new Chart(ctx, {
+        type: type,
         data: {
-            labels: Object.keys(monthlyTrend),
-            datasets: [{
-                label: 'Jumlah Kunjungan',
-                data: Object.values(monthlyTrend),
-                borderColor: '#ff9800',
-                backgroundColor: 'rgba(255,152,0,0.2)',
-                fill: true,
-                tension: 0.3
-            }]
-        }
+            labels: labels,
+            datasets: [datasetOptions]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1200,
+                easing: "easeOutQuart"
+            },
+            ...extraOptions,
+            plugins: {
+                legend: {
+                    display: type !== "bar",
+                    labels: {
+                        font: {
+                            family: "Poppins, Segoe UI, sans-serif",
+                            size: 13,
+                            weight: "600"
+                        },
+                        color: "#374151",
+                        padding: 16,
+                        usePointStyle: true,
+                        pointStyle: "circle"
+                    }
+                },
+                tooltip: {
+                    backgroundColor: "rgba(30,41,59,0.9)",
+                    titleFont: { family: "Poppins", size: 14, weight: "700" },
+                    bodyFont: { family: "Poppins", size: 13 },
+                    titleColor: "#fff",
+                    bodyColor: "#f3f4f6",
+                    padding: 12,
+                    cornerRadius: 8,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) {
+                            const dataset = context.dataset;
+                            const total = dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${dataset.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: (type === "bar") ? {
+                x: {
+                    ticks: {
+                        font: { family: "Poppins", size: 12, weight: "500" },
+                        color: "#374151"
+                    },
+                    grid: { color: "#e5e7eb" }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: { family: "Poppins", size: 12, weight: "500" },
+                        color: "#374151"
+                    },
+                    grid: { color: "#f1f5f9" }
+                }
+            } : {}
+        },
+        plugins: [shadowPlugin]
     });
-
-    new Chart(document.getElementById('weeklyChart'), {
-    type: 'line',
-    data: {
-        labels: Object.keys(weeklyTrend),
-        datasets: [{
-            label: 'Jumlah Kunjungan',
-            data: Object.values(weeklyTrend),
-            borderColor: '#2e7d32', // hijau modern
-            backgroundColor: 'rgba(46,125,50,0.2)', // hijau transparan
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: '#2e7d32',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#2e7d32'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                labels: {
-                    color: '#2e7d32',
-                    font: { weight: 'bold' }
-                }
-            }
-        },
-        scales: {
-            x: { ticks: { color: '#333' } },
-            y: { ticks: { color: '#333' } }
-        }
-    }
 });
-
-
-// 🔹 Grafik Usia
-new Chart(document.getElementById('usiaChart'), {
-    type: 'bar',
-    data: {
-        labels: Object.keys(usiaData), // contoh: ["<20", "20-29", "30-39", "40-49", "50+"]
-        datasets: [{
-            label: 'Jumlah Tamu',
-            data: Object.values(usiaData),
-            backgroundColor: '#6c5ce7',
-            borderRadius: 6 // sudut bar agak melengkung biar lebih modern
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false, // ✅ biar tinggi canvas bisa diatur manual
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: { stepSize: 1 } // naik per 1 biar jelas
-            },
-            x: {
-                ticks: { font: { size: 12 } }
-            }
-        },
-        plugins: {
-            legend: { display: false }, // label di atas bar aja, legend gak perlu
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.raw + " tamu";
-                    }
-                }
-            }
-        }
-    }
-});
-
-// 🔹 Grafik Kepuasan Survei
-new Chart(document.getElementById('surveiChart'), {
-    type: 'doughnut',
-    data: {
-        labels: Object.keys(surveiData), // contoh: ["1 Bintang", "2 Bintang", "3 Bintang", "4 Bintang", "5 Bintang"]
-        datasets: [{
-            data: Object.values(surveiData),
-            backgroundColor: ['#d32f2f','#f57c00','#fbc02d','#388e3c','#1976d2'],
-            borderWidth: 2,
-            borderColor: "#fff"
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false, // ✅ biar donat tidak terlalu gede
-        plugins: {
-            legend: { 
-                position: 'bottom',
-                labels: { font: { size: 12 } } // kecilin legend biar rapi
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.label + ": " + context.raw + " responden";
-                    }
-                }
-            }
-        },
-        cutout: '65%' // ✅ bikin donat agak tipis (lebih elegan)
-    }
-});
-
 </script>
 
-<!-- Styling Heading -->
-<!-- Styling Heading -->
+
+
+
+
 <style>
-.heading-custom {
+    /* Biar chart proporsional */
+    canvas {
+        max-width: 100% !important;
+        height: 260px !important;
+        margin: 0 auto;
+    }
+    
+    /* Card chart */
+.chart-card {
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border: 1px solid #e5e7eb;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chart-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Header tiap chart */
+.chart-header {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+}
+
+/* Body chart */
+.chart-body {
+    background: #f9fafb;
+    border-radius: 0 0 1rem 1rem;
+}
+
+/* Styling canvas */
+canvas {
+    max-width: 100% !important;
+    height: 260px !important;
+    margin: 0 auto;
+}
+
+/* Label Chart.js */
+.chartjs-render-monitor {
+    font-family: 'Poppins','Segoe UI', sans-serif !important;
+    font-weight: 500;
+    color: #374151;
+}
+/* Biar ikon filter jelas */
+#filterForm label i {
+    color: #fff !important;        /* putih */
+    text-shadow: 0 0 6px rgba(0,0,0,0.4);  /* efek glow */
+    font-size: 1.2rem;             /* agak besar */
+}
+#filterForm label {
+    color: #fff !important;        /* teks label ikut putih */
+}
+
+/* Efek goyang pada card statistik */
+.card:hover {
+    animation: wiggle 0.4s ease-in-out;
+}
+
+/* Keyframes untuk goyang */
+@keyframes wiggle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(2deg); }
+    50% { transform: rotate(-2deg); }
+    75% { transform: rotate(2deg); }
+    100% { transform: rotate(0deg); }
+}
+/* Card Statistik Modern */
+.stat-card {
+    border-radius: 1.5rem;
+    background: #fff;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.stat-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+/* Header (ikon + background gradient) */
+.stat-header {
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Body konten */
+.stat-body h4 {
     font-size: 1.6rem;
-    font-weight: 900;
-    color: #2e7d32 !important; /* 🔹 Warna hijau */
-    display: inline-block;
-    padding: 0.3rem 0.6rem;
-    border-radius: 8px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2); /* 🔹 bayangan biar lebih hidup */
-    transition: transform 0.2s ease;
+    color: #1f2937;
 }
-.heading-custom:hover {
-    transform: scale(1.05);
-    cursor: pointer;
-    color: #1b5e20 !important; /* 🔹 Hijau lebih tua saat hover */
+.stat-body small {
+    font-size: 0.9rem;
+    color: #6b7280;
 }
-.card-header {
-    color: #fff !important;
-    font-weight: 700 !important;
-}
+
+
 </style>
+
+
 @endsection

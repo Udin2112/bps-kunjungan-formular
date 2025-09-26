@@ -11,20 +11,11 @@ class Feedback extends Model
 
     protected $table = 'feedback';
 
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'email',
-        'phone',
-        'alamat',
-        'jenis_kelamin',
-        'usia',
-        'tanggal_kunjungan',
-        'pekerjaan',
-        'instansi',
-        'layanan',
-        'kunjungan',
-        'message',
-        'survei', // ✅ kolom survei skala 1-5
-    ];
+   protected $fillable = [
+    'first_name','email','phone','alamat',
+    'jenis_kelamin','usia','tanggal_kunjungan',
+    'keperluan','pekerjaan','instansi','layanan','kunjungan',
+    'message','survei'
+];
+
 }

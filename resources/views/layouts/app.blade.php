@@ -32,10 +32,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-        .sidebar {
-            background-color: #003366; /* Biru khas BPS */
-            transition: transform 0.3s ease-in-out;
-        }
+        
         .sidebar .nav-link {
             color: #ffffff;
             border-radius: 8px;
@@ -78,102 +75,168 @@
                 display: block;
             }
         }
+        /* Navbar modern */
+.navbar-modern {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Ungu → Biru vibrant */
+    border: none;
+}
+
+/* Sidebar modern */
+.sidebar {
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Sama dengan navbar */
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Link sidebar */
+.sidebar .nav-link {
+    color: #ffffff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 600;
+}
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-weight: bold;
+}
+
+
+/* ✅ Pastikan dropdown user muncul di atas DataTables */
+.user-profile .dropdown-menu {
+    z-index: 5000 !important;       /* paling atas */
+    position: absolute !important;  /* jangan ikut alur container */
+    top: 100% !important;           /* tepat di bawah tombol */
+    left: 50% !important;           /* tengah */
+    transform: translateX(-50%) !important;
+}
+
+/* ✅ Supaya DataTables tidak memotong dropdown */
+div.dataTables_wrapper {
+    overflow: visible !important;
+    position: relative !important;  /* biar z-index dropdown bisa jalan */
+}
+
+/* ✅ Tambahan agar menu dropdown tidak terlalu mepet */
+.user-profile .dropdown-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+
+
+
     </style>
 </head>
 <body class="bg-light">
 
-    <!-- 🔹 Navbar dengan tombol hamburger (hanya di layar kecil) -->
-    <nav class="navbar navbar-dark bg-primary d-md-none">
-        <div class="container-fluid">
-            <button class="btn btn-outline-light" id="sidebarToggle">
-                <i class="bi bi-list fs-4"></i>
-            </button>
-            <span class="navbar-brand mb-0 h6">Buku Tamu</span>
-        </div>
-    </nav>
+    <!-- ðŸ”¹ Navbar dengan tombol hamburger (hanya di layar kecil) -->
+    <nav class="navbar navbar-dark navbar-modern d-md-none shadow-sm">
+    <div class="container-fluid">
+        <button class="btn btn-outline-light" id="sidebarToggle">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <span class="navbar-brand mb-0 h6 fw-bold">Buku Tamu</span>
+    </div>
+</nav>
 
-    <!-- 🔹 Overlay untuk mobile -->
+
+    <!-- ðŸ”¹ Overlay untuk mobile -->
     <div class="overlay" id="overlay"></div>
 
     <div class="d-flex">
+        <!-- ðŸ”¹ Sidebar -->
         <!-- 🔹 Sidebar -->
-        <nav class="sidebar d-flex flex-column flex-shrink-0 p-3 shadow-lg" 
-             id="sidebarMenu"
-             style="width: 230px; min-height: 100vh;">
-            
-            <!-- Header Sidebar -->
-            <div class="text-center mb-4">
-                <i class="bi bi-bar-chart-fill fs-1 text-warning mb-2"></i>
-                <h6 class="text-white fw-bold mb-0">Buku Tamu</h6>
-                <span class="text-white-50 small">BPS Kota Langsa</span>
-            </div>
+<nav class="sidebar d-flex flex-column flex-shrink-0 p-3 shadow-lg" 
+     id="sidebarMenu"
+     style="width: 230px; min-height: 100vh;">
+    
+    <!-- Header Sidebar -->
+    <div class="text-center mb-3">
+        <i class="bi bi-bar-chart-fill fs-1 text-warning mb-2"></i>
+        <h6 class="text-white fw-bold mb-0">Buku Tamu</h6>
+        <span class="text-white-50 small">BPS Kota Langsa</span>
+    </div>
 
-            <hr class="border-light">
+    <!-- 🔹 Profil Admin di Atas -->
+    <!-- 🔹 Profil Admin di Atas -->
+<div class="user-profile text-center mb-4">
+    @auth
+        <!-- Avatar bulat -->
+        <div class="bg-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" 
+             style="width: 55px; height: 55px;">
+            <i class="bi bi-person text-primary fs-3"></i>
+        </div>
+        <!-- Nama Admin -->
+        <strong class="text-white d-block">{{ Auth::user()->name }}</strong>
+        <span class="text-white-50 small">Administrator</span>
+    @else
+        <div class="d-flex justify-content-center gap-2 mt-2">
+            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Login</a>
+        </div>
+    @endauth
+</div>
 
-            <!-- Menu -->
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item mb-2">
-                    <a href="{{ route('dashboard') }}" 
-                       class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <i class="bi bi-database-fill me-2"></i> <span>Statistik Kunjungan</span>
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a href="{{ route('grafik.index') }}" 
-                       class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('grafik.index') ? 'active' : '' }}">
-                        <i class="bi bi-graph-up-arrow me-2"></i> <span>Grafik</span>
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a href="{{ route('laporan.index') }}" 
-                       class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('laporan.index') ? 'active' : '' }}">
-                        <i class="bi bi-file-earmark-text-fill me-2"></i> <span>Laporan</span>
-                    </a>
-                </li>
 
-                @auth
-                <li class="nav-item">
-                    <a href="{{ route('admin.register') }}" 
-                       class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('admin.register') ? 'active' : '' }}">
-                        <i class="bi bi-person-plus-fill me-2"></i> <span>Register Admin</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.index') }}" 
-                       class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-                        <i class="bi bi-people-fill me-2"></i> <span>Daftar Admin</span>
-                    </a>
-                </li>
-                @endauth
-            </ul>
 
-            <hr class="border-light">
+    <hr class="border-light">
 
-            <!-- User Dropdown -->
-            <div class="dropdown mt-auto">
-                @auth
-                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" 
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle me-2 fs-5"></i>
-                        <strong>{{ Auth::user()->name }}</strong>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                @else
-                    <div class="d-flex gap-2 mt-2">
-                        <a href="{{ route('login') }}" class="btn btn-sm btn-outline-light">Login</a>
-                    </div>
-                @endauth
-            </div>
-        </nav>
+   <!-- Menu -->
+<ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item mb-2">
+        <a href="{{ route('dashboard') }}" 
+           class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="bi bi-database-fill me-2"></i> <span>Statistik Kunjungan Tamu</span>
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{{ route('grafik.index') }}" 
+           class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('grafik.index') ? 'active' : '' }}">
+            <i class="bi bi-graph-up-arrow me-2"></i> <span>Statistik Kunjungan PST </span>
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{{ route('laporan.index') }}" 
+           class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('laporan.index') ? 'active' : '' }}">
+            <i class="bi bi-file-earmark-text-fill me-2"></i> <span>Laporan</span>
+        </a>
+    </li>
 
-        <!-- 🔹 Main Content -->
+    @auth
+    <li class="nav-item">
+        <a href="{{ route('admin.register') }}" 
+           class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('admin.register') ? 'active' : '' }}">
+            <i class="bi bi-person-plus-fill me-2"></i> <span>Register Admin</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('admin.index') }}" 
+           class="nav-link d-flex align-items-center px-3 py-2 {{ request()->routeIs('admin.index') ? 'active' : '' }}">
+            <i class="bi bi-people-fill me-2"></i> <span>Database Admin</span>
+        </a>
+    </li>
+
+    <!-- 🔹 Tombol Logout Langsung -->
+    <li class="nav-item mt-3">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center">
+                <i class="bi bi-box-arrow-right me-2"></i> Logout
+            </button>
+        </form>
+    </li>
+    @endauth
+</ul>
+
+</nav>
+
+
+        <!-- ðŸ”¹ Main Content -->
         <div class="flex-grow-1 p-4">
             {{ $slot ?? '' }}
             @yield('content')
@@ -183,7 +246,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 🔹 Script toggle sidebar -->
+    <!-- ðŸ”¹ Script toggle sidebar -->
     <script>
         const sidebar = document.getElementById('sidebarMenu');
         const toggleBtn = document.getElementById('sidebarToggle');

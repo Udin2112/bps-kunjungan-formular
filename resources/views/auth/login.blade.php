@@ -1,47 +1,86 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BPS</title>
+    <!-- ✅ Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <div class="w-full max-w-sm 
+                bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900
+                rounded-2xl shadow-2xl p-6 border border-blue-800/30 text-white">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <!-- 🔹 Logo -->
+        <div class="flex justify-center mb-5">
+            <div class="w-14 h-14 bg-white/20 
+                        rounded-full flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-sm">BPS</span>
+            </div>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <!-- 🔹 Judul -->
+        <div class="text-center mb-5">
+            <h2 class="text-xl font-bold text-white">Selamat Datang 👋</h2>
+            <p class="text-xs text-blue-200">Silakan login untuk melanjutkan</p>
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <!-- 🔹 Form Login -->
+        <form method="POST" action="{{ route('login') }}" class="space-y-3">
+            @csrf
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-xs font-medium text-blue-100">Email</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" 
+                    required autofocus autocomplete="username"
+                    placeholder="Masukkan alamat email Anda"
+                    class="w-full px-3 py-2 rounded-lg border border-blue-300/40 
+                           focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 
+                           bg-white/90 text-gray-900 placeholder-gray-500 shadow-inner">
+            </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+            <!-- Password -->
+            <div>
+                <label for="password" class="block text-xs font-medium text-blue-100">Password</label>
+                <input id="password" type="password" name="password" required autocomplete="current-password"
+                    placeholder="Masukkan password Anda"
+                    class="w-full px-3 py-2 rounded-lg border border-blue-300/40 
+                           focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 
+                           bg-white/90 text-gray-900 placeholder-gray-500 shadow-inner">
+            </div>
+
+            <!-- Remember Me & Lupa Password -->
+            <div class="flex items-center justify-between text-xs">
+                <label class="flex items-center space-x-2 text-blue-100">
+                    <input type="checkbox" name="remember" 
+                           class="rounded border-blue-400/40 text-yellow-400 focus:ring-yellow-400">
+                    <span>Ingat saya</span>
+                </label>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="text-yellow-300 hover:text-yellow-400">
+                        Lupa password?
+                    </a>
+                @endif
+            </div>
+
+            <!-- Tombol Login -->
+            <button type="submit" 
+                class="w-full py-2.5 px-4 rounded-lg text-gray-900 font-semibold 
+                       bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 
+                       hover:from-yellow-300 hover:to-yellow-500 
+                       transition duration-200 shadow-lg hover:shadow-yellow-500/50">
+                🚀 Login
+            </button>
+        </form>
+
+        <!-- 🔹 Footer -->
+        <div class="mt-5 text-center text-[11px] text-blue-200">
+            © 2025 <span class="font-semibold text-white">BPS</span>. All rights reserved.
         </div>
-    </form>
-</x-guest-layout>
+    </div>
+
+</body>
+</html>
